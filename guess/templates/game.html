@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/answer/" method="GET" id="form">
+    {% csrf_token %}
+    {% if words %}
+        {% for word in words %}
+        <p><label><input type="radio" name="answer" value="{{forloop.counter}}" />{{ word }}</label></p>
+        {% endfor %}
+        <input type="submit" value="Go" />
+    {% endif %}
+</form>
+<button type="button" id="next" style="display: none">Next</button>
+<h3 id="answer"></h3>
+
+{% if description %}
+    <p>{{ description }}</p>
+{% endif %}
+
+<script>
+    $('#form').submit(function (e) {
+        e.preventDefault();
+        var url = $(this).attr('action')
+        var data = $(this).serialize();
+
+        $(this).find('input').prop('disabled', true)
+        $('#next').show()
+
+        $.post(url, data, function(e) {
+            if (e === '1') {
+                $('#answer').text('CORRECT')
+            } else {
+                $('#answer').text('INCORRECT')
+            }
+        });
+    });
+
+    $('#next').click(function() {
+        $.get('/regenerate/', function(e) {
+            if (e === 'True') {
+                window.location.reload()
+            }
+        })
+    });
+</script>
+{% endblock %}
